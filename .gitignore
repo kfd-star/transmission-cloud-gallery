@@ -1,0 +1,40 @@
+# Common
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Frontend
+node_modules/
+cloud-gallery-frontend/node_modules/
+cloud-gallery-frontend/dist/
+cloud-gallery-frontend/dist-ssr/
+cloud-gallery-frontend/coverage/
+cloud-gallery-frontend/*.tsbuildinfo
+
+# Backend
+target/
+cloud-gallery-backend/target/
+uploads/
+cloud-gallery-backend/uploads/
+application-local.yml
+application-prod.yml
+cloud-gallery-backend/src/main/resources/application-local.yml
+cloud-gallery-backend/src/main/resources/application-prod.yml
+
+# Local HTTP test data
+cloud-gallery-backend/httpTest/http-client.private.env.json

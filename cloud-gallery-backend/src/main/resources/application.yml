@@ -1,0 +1,105 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      cookie:
+        max-age: 2592000
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: cloud-gallery-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/cloud_gallery}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:change-me}
+  redis:
+    database: 0
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    timeout: 5000
+  session:
+    store-type: redis
+    timeout: 2592000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  shardingsphere:
+    datasource:
+      names: cloud_gallery
+      cloud_gallery:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${MYSQL_URL:jdbc:mysql://localhost:3306/cloud_gallery}
+        username: ${MYSQL_USERNAME:root}
+        password: ${MYSQL_PASSWORD:change-me}
+    rules:
+      sharding:
+        tables:
+          picture:
+            actual-data-nodes: cloud_gallery.picture
+            table-strategy:
+              standard:
+                sharding-column: spaceId
+                sharding-algorithm-name: picture_sharding_algorithm
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED
+            props:
+              strategy: standard
+              algorithmClassName: com.kfd.cloudgallery.manager.sharding.PictureShardingAlgorithm
+    props:
+      sql-show: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    enable-sql-runner: true
+    db-config:
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+knife4j:
+  enable: true
+  openapi:
+    title: Cloud Gallery API
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.kfd.cloudgallery.controller
+
+# cos:
+#   client:
+#     host: xxx
+#     secretId: xxx
+#     secretKey: xxx
+#     region: xxx
+#     bucket: xxx
+
+postgres:
+  enabled: true
+  url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/sensor_data_system}
+  username: ${POSTGRES_USERNAME:postgres}
+  password: ${POSTGRES_PASSWORD:change-me}
+
+local:
+  upload:
+    path: ./uploads
+    url: ${LOCAL_UPLOAD_URL:http://localhost:8123/api/file}
