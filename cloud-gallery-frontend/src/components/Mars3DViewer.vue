@@ -121,8 +121,8 @@ const getProxyImageUrl = (imageUrl: string): string => {
     
     // 如果是外部URL，使用代理
     if (url.origin !== currentOrigin && !imageUrl.includes('/api/file/proxy')) {
-      // 后端服务器地址（与request.ts中的DEV_BASE_URL保持一致）
-      const backendBaseUrl = 'http://localhost:8123'
+      // 生产环境使用当前站点相对入口，由 Nginx 转发到后端；开发环境直连本地后端
+      const backendBaseUrl = import.meta.env.PROD ? window.location.origin : 'http://localhost:8123'
       // 构建完整的代理URL（指向后端服务器）
       const proxyUrl = `${backendBaseUrl}/api/file/proxy?imageUrl=${encodeURIComponent(imageUrl)}`
       console.log('使用图片代理:', { original: imageUrl, proxy: proxyUrl })

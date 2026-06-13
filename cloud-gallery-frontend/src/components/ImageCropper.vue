@@ -22,7 +22,7 @@
     <div class="image-edit-actions" v-if="isTeamSpace">
       <a-space>
         <a-button v-if="editingUser" disabled>{{ editingUser.userName }} 正在编辑</a-button>
-        <a-button v-if="canEnterEdit" type="primary" ghost @click="enterEdit">进入编辑</a-button>
+        <a-button v-if="canEnterEdit" type="primary" ghost :loading="enteringEdit" @click="enterEdit">进入编辑</a-button>
         <a-button v-if="canExitEdit" danger ghost @click="exitEdit">退出编辑</a-button>
       </a-space>
     </div>
@@ -177,6 +177,8 @@ const loginUser = loginUserStore.loginUser
 
 // 正在编辑的用户
 const editingUser = ref<API.UserVO>()
+// 当前用户正在请求进入编辑
+const enteringEdit = ref(false)
 // 当前用户是否可进入编辑
 const canEnterEdit = computed(() => {
   return !editingUser.value
@@ -221,11 +223,13 @@ const initWebsocket = () => {
 
   websocket.on(PICTURE_EDIT_MESSAGE_TYPE_ENUM.ERROR, (msg) => {
     console.log('收到错误通知：', msg)
+    enteringEdit.value = false
     message.info(msg.message)
   })
 
   websocket.on(PICTURE_EDIT_MESSAGE_TYPE_ENUM.ENTER_EDIT, (msg) => {
     console.log('收到进入编辑状态的消息：', msg)
+    enteringEdit.value = false
     message.info(msg.message)
     editingUser.value = msg.user
   })
@@ -252,8 +256,13 @@ const initWebsocket = () => {
 
   websocket.on(PICTURE_EDIT_MESSAGE_TYPE_ENUM.EXIT_EDIT, (msg) => {
     console.log('收到退出编辑状态的消息：', msg)
+    enteringEdit.value = false
     message.info(msg.message)
     editingUser.value = undefined
+  })
+
+  websocket.on('close', () => {
+    enteringEdit.value = false
   })
 }
 
@@ -276,11 +285,17 @@ onUnmounted(() => {
 
 // 进入编辑状态
 const enterEdit = () => {
+  if (enteringEdit.value) {
+    return
+  }
   if (websocket) {
-    // 发送进入编辑状态的请求
+    enteringEdit.value = true
+    // 发送进入编辑状态的请求；若 WebSocket 还在连接中，会在连接建立后自动发送
     websocket.sendMessage({
       type: PICTURE_EDIT_MESSAGE_TYPE_ENUM.ENTER_EDIT,
     })
+  } else {
+    message.warning('协同编辑连接尚未初始化，请稍后重试')
   }
 }
 

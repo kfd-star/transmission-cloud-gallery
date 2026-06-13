@@ -7,9 +7,7 @@ import com.kfd.cloudgallery.model.dto.postgres.PostgresImageData;
 import com.kfd.cloudgallery.model.entity.ImageDataSync;
 import com.kfd.cloudgallery.service.ImageDataSyncService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -29,6 +27,15 @@ import java.util.List;
 // 移除条件注解，始终注册服务，但只在需要时创建PostgreSQL连接
 public class ImageDataSyncServiceImpl extends ServiceImpl<ImageDataSyncMapper, ImageDataSync> implements ImageDataSyncService {
 
+    @Value("${postgres.url:jdbc:postgresql://localhost:5433/sensor_data_system}")
+    private String postgresUrl;
+
+    @Value("${postgres.username:postgres}")
+    private String postgresUsername;
+
+    @Value("${postgres.password:postgres}")
+    private String postgresPassword;
+
     // 动态创建PostgreSQL连接，避免启动时依赖注入冲突
     private JdbcTemplate postgresJdbcTemplate;
 
@@ -42,9 +49,9 @@ public class ImageDataSyncServiceImpl extends ServiceImpl<ImageDataSyncMapper, I
                 log.info("动态创建PostgreSQL连接...");
                 DriverManagerDataSource dataSource = new DriverManagerDataSource();
                 dataSource.setDriverClassName("org.postgresql.Driver");
-                dataSource.setUrl("jdbc:postgresql://localhost:5433/sensor_data_system");
-                dataSource.setUsername("postgres");
-                dataSource.setPassword("postgres");
+                dataSource.setUrl(postgresUrl);
+                dataSource.setUsername(postgresUsername);
+                dataSource.setPassword(postgresPassword);
                 
                 postgresJdbcTemplate = new JdbcTemplate(dataSource);
                 log.info("PostgreSQL连接创建成功");
